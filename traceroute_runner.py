@@ -4,11 +4,22 @@ from __future__ import print_function
 import sys
 import json
 import socket
+import time
 import tracerouteparser
 from requests import post
 from requests import ConnectionError
 from subprocess import check_output
 
+
+def warning(*objs):
+    print("WARNING:", *objs, file=sys.stderr)
+
+
+def notice(*objs):
+    print("NOTICE:", *objs, file=sys.stderr)
+
+start_time = time.time()
+notice("Traceroute runner starting, time:", start_time)
 
 dump = {}
 url = 'http://127.0.0.1:9001/trace'
@@ -18,21 +29,21 @@ ips = []
 if sys.argv[1] is not None:
     with open(sys.argv[1]) as f:
         for line in f:
-            ips.append(line)
+            ips.append(line.strip())
 else:
     ips.append('8.8.8.8')
 
-own_ips = check_output(["/sbin/ip", "-4", "addr", "list"])
+own_ips = check_output(["ip", "-4", "addr", "list"])
 dump["data"] = []
 
 for ip in ips:
     if ip in own_ips:
         continue
-    print(ip)
+    notice(ip)
     args = ""
     size = "20"
     out = check_output(["/usr/sbin/traceroute", ip, size])
-    src_ip = check_output(["/sbin/ip", "route", "get", ip]).splitlines()[0].split()[6]
+    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[6]
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
 
@@ -56,3 +67,7 @@ except ConnectionError as e:
     print(e)
 
 # print(json.dumps(dump))
+
+end_time = time.time()
+notice("Traceroute runner done, time:", end_time, "Took:",
+       end_time - start_time, "seconds")
