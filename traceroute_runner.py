@@ -22,10 +22,10 @@ def notice(*objs):
 
 parser = ArgumentParser()
 parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
-parser.add_argument("-r", "--read-file", help="read ips from file one per line", type=str, dest="ips_file")
+parser.add_argument("-r", "--read-file",
+                    help="read ips from file one per line",
+                    type=str, dest="ips_file")
 args = parser.parse_args()
-
-debug = args.debug
 
 start_time = time.time()
 notice("Traceroute runner starting, time:", start_time)
@@ -49,7 +49,6 @@ for ip in ips:
     if ip in own_ips:
         continue
     notice(ip)
-    args = ""
     size = "20"
     out = check_output(["/usr/sbin/traceroute", ip, size])
     src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[6]
@@ -71,7 +70,7 @@ for ip in ips:
                                                   "anno": probe.anno})
     dump["data"].append(dump_ip)
 
-if debug:
+if args.debug:
     print(json.dumps(dump))
 else:
     try:
