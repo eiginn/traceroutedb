@@ -6,6 +6,7 @@ import json
 import socket
 import time
 import tracerouteparser
+from argparse import ArgumentParser
 from requests import post
 from requests import ConnectionError
 from subprocess import check_output
@@ -18,6 +19,14 @@ def warning(*objs):
 def notice(*objs):
     print("NOTICE:", *objs, file=sys.stderr)
 
+
+parser = ArgumentParser()
+parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
+parser.add_argument("-r", "--read-file", help="read ips from file one per line", type=str, dest="ips_file")
+args = parser.parse_args()
+
+debug = args.debug
+
 start_time = time.time()
 notice("Traceroute runner starting, time:", start_time)
 
@@ -26,8 +35,8 @@ url = 'http://127.0.0.1:9001/trace'
 dump["reporter"] = socket.gethostname()
 ips = []
 
-if sys.argv[1] is not None:
-    with open(sys.argv[1]) as f:
+if args.ips_file:
+    with open(args.ips_file) as f:
         for line in f:
             ips.append(line.strip())
 else:
@@ -61,12 +70,14 @@ for ip in ips:
                                                   "rtt": probe.rtt,
                                                   "anno": probe.anno})
     dump["data"].append(dump_ip)
-try:
-    r = post(url, data=json.dumps(dump))
-except ConnectionError as e:
-    print(e)
 
-# print(json.dumps(dump))
+if debug:
+    print(json.dumps(dump))
+else:
+    try:
+        r = post(url, data=json.dumps(dump))
+    except ConnectionError as e:
+        print(e)
 
 end_time = time.time()
 notice("Traceroute runner done, time:", end_time, "Took:",

@@ -11,7 +11,7 @@ app = Flask(__name__)
 @app.route('/trace', methods=["POST"])
 def receive_traces():
     if request.method == 'POST':
-        conn = psycopg2.connect("dbname=dev_fzt user=postgres host=localhost")
+        conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
         cur = conn.cursor()
         data = request.get_json(force=True)
         print(json.dumps(data))
