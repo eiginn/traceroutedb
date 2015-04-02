@@ -3,9 +3,17 @@
 from __future__ import print_function
 import json
 import psycopg2
-from flask import Flask, jsonify, request
+from flask import Flask, request
 
 app = Flask(__name__)
+
+
+def dictToHstore(in_dict):
+    single_kvs = []
+    for key in in_dict.iterkeys():
+        single_kvs.append("{0}=>{1}".format(key, in_dict[key]))
+    hstore_str = "'{0}'".format(", ".join(single_kvs))
+    return hstore_str
 
 
 @app.route('/trace', methods=["POST"])
