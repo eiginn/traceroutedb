@@ -28,7 +28,7 @@ parser.add_argument("-r", "--read-file",
 args = parser.parse_args()
 
 start_time = time.time()
-notice("Traceroute runner starting, time:", start_time)
+notice("Traceroute runner starting")
 
 dump = {}
 url = 'http://127.0.0.1:9001/trace'
@@ -45,13 +45,16 @@ else:
 own_ips = check_output(["ip", "-4", "addr", "list"])
 dump["data"] = []
 
+if args.debug:
+    print(ips)
+
 for ip in ips:
     if ip in own_ips:
         continue
     notice(ip)
     size = "20"
     out = check_output(["/usr/sbin/traceroute", ip, size])
-    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[6]
+    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
 
@@ -79,5 +82,4 @@ else:
         print(e)
 
 end_time = time.time()
-notice("Traceroute runner done, time:", end_time, "Took:",
-       end_time - start_time, "seconds")
+notice("Traceroute runner done, Took:", int(end_time - start_time), "seconds")
