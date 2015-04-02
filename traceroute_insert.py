@@ -26,11 +26,18 @@ def receive_traces():
                 for probe in hop:
                     if probe["ip"] is None:
                         continue
-                    if probe["rtt"] is None or probe["rtt"] == "None":
-                        time = "NULL"
-                    else:
-                        time = "'time=>{}'".format(probe["rtt"])
-                    cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, time, probe["ip"]))
+
+                    time = probe.get("rtt", None)
+                    if time or time != "None":
+                        time = "time=>{}".format(time)
+                        continue
+
+                    anno = probe.get("anno", None)
+                    if anno:
+                        anno = "anno=>{}".format(anno)
+
+                    kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
+                    cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
         conn.commit()
         cur.close()
         conn.close()

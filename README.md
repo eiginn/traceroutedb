@@ -1,6 +1,6 @@
 # Traceroute DB
-An experiment in full mesh historical traceroutes
-[![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
+
+[![Code Health](https://landscape.io/github/eiginn/traceroutedb/master/landscape.svg?style=flat)](https://landscape.io/github/eiginn/traceroutedb/master)
 ## Some examples
 find traceroutes where any hop is over a time
 ```
