@@ -4,8 +4,14 @@ from __future__ import print_function
 import json
 import psycopg2
 from flask import Flask, request
+from argparse import ArgumentParser
 
 app = Flask(__name__)
+
+
+parser = ArgumentParser()
+parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
+args = parser.parse_args()
 
 
 def dictToHstore(in_dict):
@@ -22,11 +28,20 @@ def receive_traces():
         conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
         cur = conn.cursor()
         data = request.get_json(force=True)
-        print(json.dumps(data))
+
         for trace in data["data"]:
-            cur.execute("SELECT nextval('traceroute_id_seq');")
-            trace_id = cur.fetchone()[0]
-            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], data["reporter"]))
+
+            if args.debug:
+                print("SELECT nextval('traceroute_id_seq');")
+                trace_id = "DEBUG_ID"
+            else:
+                cur.execute("SELECT nextval('traceroute_id_seq');")
+                trace_id = cur.fetchone()[0]
+
+            if args.debug:
+                print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], data["reporter"]))
+            else:
+                cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], data["reporter"]))
 
             hops = trace["hops"]
             for key in hops.keys():
@@ -36,16 +51,20 @@ def receive_traces():
                         continue
 
                     time = probe.get("rtt", None)
-                    if time or time != "None":
+                    if time is not None and time != "None":
                         time = "time=>{}".format(time)
-                        continue
+                    else:
+                        time = ''
 
                     anno = probe.get("anno", None)
                     if anno:
                         anno = "anno=>{}".format(anno)
 
                     kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
-                    cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
+                    if args.debug:
+                        print("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
+                    else:
+                        cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
         conn.commit()
         cur.close()
         conn.close()

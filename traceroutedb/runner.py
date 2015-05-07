@@ -43,12 +43,13 @@ else:
     ips.append('8.8.8.8')
 
 own_ips = check_output(["ip", "-4", "addr", "list"])
-dump["data"] = []
 
 if args.debug:
     print(ips)
 
 for ip in ips:
+    dump["data"] = []
+
     if ip in own_ips:
         continue
     notice(ip)
@@ -73,13 +74,13 @@ for ip in ips:
                                                   "anno": probe.anno})
     dump["data"].append(dump_ip)
 
-if args.debug:
-    print(json.dumps(dump))
-else:
-    try:
-        r = post(url, data=json.dumps(dump))
-    except ConnectionError as e:
-        print(e)
+    if args.debug:
+        print(json.dumps(dump))
+    else:
+        try:
+            r = post(url, data=json.dumps(dump))
+        except ConnectionError as e:
+            print(e)
 
 end_time = time.time()
 notice("Traceroute runner done, Took:", int(end_time - start_time), "seconds")
