@@ -10,14 +10,7 @@ from argparse import ArgumentParser
 from requests import post
 from requests import ConnectionError
 from subprocess import check_output
-
-
-def warning(*objs):
-    print("WARNING:", *objs, file=sys.stderr)
-
-
-def notice(*objs):
-    print("NOTICE:", *objs, file=sys.stderr)
+import logging
 
 
 parser = ArgumentParser()
@@ -25,13 +18,20 @@ parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
 parser.add_argument("-r", "--read-file",
                     help="read ips from file one per line",
                     type=str, dest="ips_file")
+parser.add_argument("-s", "--server",
+                    help="server to send traces to",
+                    type=str, dest="server", default=False)
 args = parser.parse_args()
 
+logging.basicConfig(level=logging.DEBUG)
 start_time = time.time()
-notice("Traceroute runner starting")
+logging.info("Traceroute runner starting")
 
 dump = {}
-url = 'http://127.0.0.1:9001/trace'
+if args.server:
+    url = args.server
+else:
+    url = 'http://127.0.0.1:9001/trace'
 dump["reporter"] = socket.gethostname()
 ips = []
 
@@ -44,15 +44,14 @@ else:
 
 own_ips = check_output(["ip", "-4", "addr", "list"])
 
-if args.debug:
-    print(ips)
+logging.debug('IP addresses:\n' + str(ips))
 
 for ip in ips:
     dump["data"] = []
 
     if ip in own_ips:
         continue
-    notice(ip)
+    logging.info(ip)
     size = "20"
     out = check_output(["/usr/sbin/traceroute", ip, size])
     src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]
@@ -75,7 +74,7 @@ for ip in ips:
     dump["data"].append(dump_ip)
 
     if args.debug:
-        print(json.dumps(dump))
+        logging.debug(json.dumps(dump))
     else:
         try:
             r = post(url, data=json.dumps(dump))
@@ -83,4 +82,4 @@ for ip in ips:
             print(e)
 
 end_time = time.time()
-notice("Traceroute runner done, Took:", int(end_time - start_time), "seconds")
+logging.info("Traceroute runner done, Took: " + str(int(end_time - start_time)) + " seconds")

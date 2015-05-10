@@ -38,6 +38,10 @@ setup(
     package_dir={'traceroutedb':
                  'traceroutedb'},
     include_package_data=True,
+    entry_points='''
+                 [console_scripts]
+                 pgcli=traceroutedb.traceroutedb:cli
+                 ''',
     install_requires=requirements,
     license="BSD",
     zip_safe=False,

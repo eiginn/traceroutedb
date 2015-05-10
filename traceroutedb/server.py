@@ -5,13 +5,17 @@ import json
 import psycopg2
 from flask import Flask, request
 from argparse import ArgumentParser
+import logging
 
 app = Flask(__name__)
-
+logger = logging.getLogger(__name__)
 
 parser = ArgumentParser()
 parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
 args = parser.parse_args()
+
+if args.debug:
+    logger.setLevel(logging.DEBUG)
 
 
 def dictToHstore(in_dict):
@@ -72,4 +76,4 @@ def receive_traces():
 
 
 if __name__ == '__main__':
-    app.run(port=9001, debug=True)
+    app.run(port=9001, debug=False)

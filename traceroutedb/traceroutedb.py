@@ -29,6 +29,9 @@ if args.server:
     serv = server.Server(config)
     serv.run
 
+
+def cli():
+    pass
 # parse conf
 # let flags override conf
 # if for runner/server
