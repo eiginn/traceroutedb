@@ -57,7 +57,7 @@ CREATE TABLE hop (
 );
 
 
-ALTER TABLE public.hop OWNER TO postgres;
+ALTER TABLE hop OWNER TO postgres;
 
 --
 -- Name: COLUMN hop.hop_kvs; Type: COMMENT; Schema: public; Owner: postgres
@@ -78,7 +78,7 @@ CREATE SEQUENCE probe_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.probe_id_seq OWNER TO postgres;
+ALTER TABLE probe_id_seq OWNER TO postgres;
 
 --
 -- Name: traceroute; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -89,11 +89,12 @@ CREATE TABLE traceroute (
     origin_ip inet,
     dest_ip inet,
     cdate timestamp with time zone DEFAULT now(),
-    reporter text
+    reporter text,
+    trace_kvs hstore
 );
 
 
-ALTER TABLE public.traceroute OWNER TO postgres;
+ALTER TABLE traceroute OWNER TO postgres;
 
 --
 -- Name: traceroute_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -107,7 +108,7 @@ CREATE SEQUENCE traceroute_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.traceroute_id_seq OWNER TO postgres;
+ALTER TABLE traceroute_id_seq OWNER TO postgres;
 
 --
 -- Name: hop_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
@@ -163,31 +164,3 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-CREATE OR REPLACE FUNCTION trace_add(__src_ip INET, __dst_ip INET, __reporter VARCHAR, OUT __traceroute_id BIGINT) AS $_$
-DECLARE
-    __traceroute_id BIGINT;
-BEGIN
-
-    IF (__src_ip IS NULL) OR (__dst_ip IS NULL) OR (__reporter IS NULL) THEN
-        __traceroute_id := -1;
-        RETURN;
-    ELSE
-        SELECT INTO __traceroute_id nextval('traceroute_id_seq'::regclass);
-        INSERT INTO traceroute VALUES (__traceroute_id, __src_ip, __dst_ip, now(), __reporter);
-    RETURN;
-END;
-$_$ Language 'plpgsql' SECURITY DEFINER;
-
-CREATE OR REPLACE FUNCTION hop_add(__probe_id INT, __traceroute_id BIGINT, __hop_num INT, __hop_kvs HSTORE, OUT __hop_id) AS $_$
-DECLARE
-    __hop_id BIGINT;
-BEGIN
-
-    IF (__probe_id IS NULL) OR (__traceroute_id IS NULL) OR (__hop_num IS NULL) OR (__hop_kvs IS NULL) THEN
-        __hop_id := -1;
-        RETURN;
-    ELSE
-        -- BLAH
-    RETURN;
-END;
-$_$ Language 'plpgsql' SECURITY DEFINER;
