@@ -23,7 +23,8 @@ parser.add_argument("-s", "--server",
                     type=str, dest="server", default=False)
 args = parser.parse_args()
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+logging.getLogger("requests").setLevel(logging.WARNING)
 start_time = time.time()
 logging.info("Traceroute runner starting")
 
