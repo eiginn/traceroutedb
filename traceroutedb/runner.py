@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 import sys
+import os
+import io
 import json
 import socket
 import time
@@ -9,9 +11,10 @@ import tracerouteparser
 from argparse import ArgumentParser
 from requests import post
 from requests import ConnectionError
-from subprocess import check_output
+from subprocess import check_output, Popen
 import logging
 
+ON_POSIX = 'posix' in sys.builtin_module_names
 
 parser = ArgumentParser()
 parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
@@ -23,7 +26,7 @@ parser.add_argument("-s", "--server",
                     type=str, dest="server", default=False)
 args = parser.parse_args()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 start_time = time.time()
 logging.info("Traceroute runner starting")
@@ -46,6 +49,22 @@ else:
 own_ips = check_output(["ip", "-4", "addr", "list"])
 
 logging.debug('IP addresses:\n' + str(ips))
+
+fds = {}
+for ip in ips:
+    input_fd, output_fd = os.pipe()
+    fds[ip] = (input_fd, output_fd)
+
+processes = [Popen(['/usr/sbin/traceroute', ip, "20"], stdout=fds[ip][1], close_fds=ON_POSIX) for ip in ips]
+for ip in ips:
+    os.close(fds[ip][1])
+for p in processes:
+    p.wait()
+
+with io.open(fds["61.54.46.17"][0], 'r', buffering=1) as file:
+    for line in file:
+        print(line, end='')
+
 
 for ip in ips:
     dump["data"] = []
