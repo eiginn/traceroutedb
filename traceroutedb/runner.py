@@ -26,8 +26,12 @@ parser.add_argument("-s", "--server",
                     type=str, dest="server", default=False)
 args = parser.parse_args()
 
-logging.basicConfig(level=logging.WARNING)
-logging.getLogger("requests").setLevel(logging.WARNING)
+if args.debug:
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("requests").setLevel(logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
 start_time = time.time()
 logging.info("Traceroute runner starting")
 
@@ -61,19 +65,14 @@ for ip in ips:
 for p in processes:
     p.wait()
 
-with io.open(fds["61.54.46.17"][0], 'r', buffering=1) as file:
-    for line in file:
-        print(line, end='')
-
-
 for ip in ips:
     dump["data"] = []
 
     if ip in own_ips:
         continue
     logging.info(ip)
-    size = "20"
-    out = check_output(["/usr/sbin/traceroute", ip, size])
+    with io.open(fds[ip][0], 'r', buffering=1) as file:
+        out = file.read()
     src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
