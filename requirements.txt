@@ -3,3 +3,5 @@ requests
 psycopg2
 flask
 profig
+ezcf
+shelljob

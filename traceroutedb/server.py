@@ -33,7 +33,11 @@ def receive_traces():
         cur = conn.cursor()
         data = request.get_json(force=True)
 
-        for trace in data["data"]:
+        for i in data:
+            trace = i["data"]
+            reporter = i["reporter"]
+            print(trace)
+            print(reporter)
 
             if args.debug:
                 print("SELECT nextval('traceroute_id_seq');")
@@ -43,9 +47,9 @@ def receive_traces():
                 trace_id = cur.fetchone()[0]
 
             if args.debug:
-                print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], data["reporter"]))
+                print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
             else:
-                cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], data["reporter"]))
+                cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
 
             hops = trace["hops"]
             for key in hops.keys():
@@ -76,4 +80,4 @@ def receive_traces():
 
 
 if __name__ == '__main__':
-    app.run(port=9001, debug=False)
+    app.run(port=9001, debug=args.debug)
