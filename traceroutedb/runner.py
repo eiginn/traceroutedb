@@ -21,6 +21,8 @@ def init_worker():
 
 
 def submit_trace(result):
+    if result is None:
+        return
     if args.simulate:
         logging.debug(json.dumps(result))
     else:
