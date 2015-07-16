@@ -36,8 +36,6 @@ def receive_traces():
         for i in data:
             trace = i["data"]
             reporter = i["reporter"]
-            print(trace)
-            print(reporter)
 
             if args.debug:
                 print("SELECT nextval('traceroute_id_seq');")
