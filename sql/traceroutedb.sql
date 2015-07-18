@@ -44,6 +44,18 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: annotation; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE annotation (
+    short_name character varying(10),
+    long_name character varying(100)
+);
+
+
+ALTER TABLE annotation OWNER TO postgres;
+
+--
 -- Name: hop; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -52,7 +64,7 @@ CREATE TABLE hop (
     traceroute_id bigint,
     hop_number integer,
     hop_kvs hstore,
-    host character varying,
+    host inet,
     cdate timestamp with time zone
 );
 
@@ -135,11 +147,11 @@ ALTER TABLE ONLY hop
 
 
 --
--- Name: uni_id; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: uni_trace_id; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
 ALTER TABLE ONLY traceroute
-    ADD CONSTRAINT uni_id UNIQUE (traceroute_id);
+    ADD CONSTRAINT uni_trace_id UNIQUE (traceroute_id);
 
 
 --
@@ -158,6 +170,40 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+SET search_path = public, pg_catalog;
+
+--
+-- Data for Name: annotation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY annotation (short_name, long_name) FROM stdin;
+!H	host unreachable
+!N	network unreachable
+!P	protocol unreachable
+!S	source route failed
+!F	fragmentation needed
+!X	communication administratively prohibited
+!V	host precedence violation
+!C	precedence  cutoff in effect
+!8	source host isolated
+\.
 
 
 --
