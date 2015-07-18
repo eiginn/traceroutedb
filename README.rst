@@ -94,3 +94,14 @@ size of db with 730 traces
         | public.annotation        | 8192 bytes   |
         +--------------------------+--------------+
         SELECT 5
+
+Annotations are usually bad, lets find them
+    .. code-block:: sql
+
+        traceroutedb> SELECT DISTINCT traceroute_id from hop where (hop_kvs->'anno') IS NOT NULL;
+        +-----------------+
+        |   traceroute_id |
+        |-----------------|
+        |              25 |
+        +-----------------+
+        SELECT 1
