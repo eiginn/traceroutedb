@@ -41,7 +41,7 @@ find traceroutes where any hop is over a time
 find full traceroute like output
     .. code-block:: sql
 
-        dev_fzt> SELECT t.reporter, t.origin_ip, t.dest_ip, hop.* from traceroute as t INNER JOIN hop on t.traceroute_id = hop.traceroute_id WHERE t.traceroute_id = 7 ORDER BY hop_number ASC;
+        dev_fzt> SELECT t.reporter, t.origin_ip, t.dest_ip, hop.* from traceroute as t INNER JOIN hop USING (traceroute_id) WHERE t.traceroute_id = 7 ORDER BY hop_number ASC;
         +------------+-------------+-----------+------------+-----------------+--------------+------------------+----------------+----------------------------------+
         | reporter   | origin_ip   | dest_ip   |   probe_id |   traceroute_id |   hop_number | hop_kvs          | host           | cdate                            |
         |------------+-------------+-----------+------------+-----------------+--------------+------------------+----------------+----------------------------------|
@@ -71,3 +71,26 @@ find full traceroute like output
         | nm         | 10.0.0.43   | 8.8.8.8   |        254 |               7 |           10 | "time"=>"22.721" | 8.8.8.8        | 2015-02-02 22:52:46.240210-08:00 |
         | nm         | 10.0.0.43   | 8.8.8.8   |        255 |               7 |           10 | "time"=>"23.983" | 8.8.8.8        | 2015-02-02 22:52:46.240210-08:00 |
         +------------+-------------+-----------+------------+-----------------+--------------+------------------+----------------+----------------------------------+
+
+size of db with 730 traces
+    .. code-block:: sql
+
+        dev_fzt> SELECT nspname || '.' || relname AS "relation",
+            pg_size_pretty(pg_total_relation_size(C.oid)) AS "total_size"
+          FROM pg_class C
+          LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
+          WHERE nspname NOT IN ('pg_catalog', 'information_schema')
+            AND C.relkind <> 'i'
+            AND nspname !~ '^pg_toast'
+          ORDER BY pg_total_relation_size(C.oid) DESC
+          LIMIT 20;
+        +--------------------------+--------------+
+        | relation                 | total_size   |
+        |--------------------------+--------------|
+        | public.hop               | 2320 kB      |
+        | public.traceroute        | 160 kB       |
+        | public.probe_id_seq      | 8192 bytes   |
+        | public.traceroute_id_seq | 8192 bytes   |
+        | public.annotation        | 8192 bytes   |
+        +--------------------------+--------------+
+        SELECT 5
