@@ -54,7 +54,7 @@ def run_trace(ip):
                                                "rtt": probe.rtt,
                                                "anno": probe.anno})
     ret = {"reporter": socket.gethostname(), "data": data}
-    return ret
+    submit_trace(ret)
 
 
 parser = ArgumentParser()
@@ -113,7 +113,7 @@ logging.debug('IP addresses:\n' + str(ips))
 
 pool = Pool(NUMPROCS, init_worker)
 try:
-    pool.map_async(run_trace, ips, 1, submit_trace).get(9999999)
+    pool.map_async(run_trace, ips, 1).get(9999999)
 except KeyboardInterrupt:
     print("Caught KeyboardInterrupt, terminating workers")
     pool.terminate()

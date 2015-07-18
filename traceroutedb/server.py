@@ -33,48 +33,48 @@ def receive_traces():
         cur = conn.cursor()
         data = request.get_json(force=True)
 
-        for i in data:
-            trace = i["data"]
-            reporter = i["reporter"]
+        trace = data["data"]
+        reporter = data["reporter"]
 
-            if args.debug:
-                print("SELECT nextval('traceroute_id_seq');")
-                trace_id = "DEBUG_ID"
-            else:
-                cur.execute("SELECT nextval('traceroute_id_seq');")
-                trace_id = cur.fetchone()[0]
+        if args.debug:
+            print("SELECT nextval('traceroute_id_seq');")
+            trace_id = "DEBUG_ID"
+        else:
+            cur.execute("SELECT nextval('traceroute_id_seq');")
+            trace_id = cur.fetchone()[0]
 
-            if args.debug:
-                print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
-            else:
-                cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
+        if args.debug:
+            print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
+        else:
+            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
 
-            hops = trace["hops"]
-            for key in hops.keys():
-                hop = hops[key]
-                for probe in hop:
-                    if probe["ip"] is None:
-                        continue
+        hops = trace["hops"]
+        for key in hops.keys():
+            hop = hops[key]
+            for probe in hop:
+                if probe["ip"] is None:
+                    continue
 
-                    time = probe.get("rtt", None)
-                    if time is not None and time != "None":
-                        time = "time=>{}".format(time)
-                    else:
-                        time = ''
+                time = probe.get("rtt", None)
+                if time is not None and time != "None":
+                    time = "time=>{}".format(time)
+                else:
+                    time = ''
 
-                    anno = probe.get("anno", None)
-                    if anno:
-                        anno = "anno=>{}".format(anno)
+                anno = probe.get("anno", None)
+                if anno:
+                    anno = "anno=>{}".format(anno)
 
-                    kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
-                    if args.debug:
-                        print("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
-                    else:
-                        cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return 'OK'
+                kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
+                if args.debug:
+                    print("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
+                else:
+                    cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("ip:", request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"])
+    return 'OK'
 
 
 if __name__ == '__main__':
