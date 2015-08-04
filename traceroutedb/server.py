@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import json
 import psycopg2
 from flask import Flask, request
 from argparse import ArgumentParser
@@ -35,6 +34,9 @@ def receive_traces():
 
         trace = data["data"]
         reporter = data["reporter"]
+        note = data.get("note")
+        if not note:
+            note = "NULL"
 
         if args.debug:
             print("SELECT nextval('traceroute_id_seq');")
@@ -44,9 +46,9 @@ def receive_traces():
             trace_id = cur.fetchone()[0]
 
         if args.debug:
-            print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
+            print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', '{4}'::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, "note=>" + note))
         else:
-            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}');".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter))
+            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', '{4}'::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, "note=>" + note))
 
         hops = trace["hops"]
         for key in hops.keys():
@@ -73,7 +75,7 @@ def receive_traces():
     conn.commit()
     cur.close()
     conn.close()
-    print("ip:", request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"])
+    print("ip:", request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"], "trace_id:", trace_id)
     return 'OK'
 
 

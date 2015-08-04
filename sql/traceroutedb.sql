@@ -123,6 +123,26 @@ CREATE SEQUENCE traceroute_id_seq
 ALTER TABLE traceroute_id_seq OWNER TO postgres;
 
 --
+-- Name: trv_trace; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW trv_trace AS
+ SELECT t.reporter,
+    t.origin_ip,
+    t.dest_ip,
+    hop.probe_id,
+    hop.traceroute_id,
+    hop.hop_number,
+    hop.hop_kvs,
+    hop.host,
+    hop.cdate
+   FROM (traceroute t
+     JOIN hop USING (traceroute_id));
+
+
+ALTER TABLE trv_trace OWNER TO postgres;
+
+--
 -- Name: hop_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -155,6 +175,13 @@ ALTER TABLE ONLY traceroute
 
 
 --
+-- Name: traceroute_id_hop_idx; Type: INDEX; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE INDEX traceroute_id_hop_idx ON hop USING btree (traceroute_id);
+
+
+--
 -- Name: hop_traceroute_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -177,36 +204,22 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 --
 
 --
--- PostgreSQL database dump
---
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-
-SET search_path = public, pg_catalog;
-
---
 -- Data for Name: annotation; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY annotation (short_name, long_name) FROM stdin;
-!H	host unreachable
-!N	network unreachable
-!P	protocol unreachable
-!S	source route failed
-!F	fragmentation needed
-!X	communication administratively prohibited
-!V	host precedence violation
-!C	precedence  cutoff in effect
-!8	source host isolated
+!H      host unreachable
+!N      network unreachable
+!P      protocol unreachable
+!S      source route failed
+!F      fragmentation needed
+!X      communication administratively prohibited
+!V      host precedence violation
+!C      precedence  cutoff in effect
+!8      source host isolated
 \.
 
 
 --
 -- PostgreSQL database dump complete
 --
-

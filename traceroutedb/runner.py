@@ -53,7 +53,7 @@ def run_trace(ip):
                                                "ip": probe.ipaddr,
                                                "rtt": probe.rtt,
                                                "anno": probe.anno})
-    ret = {"reporter": socket.gethostname(), "data": data}
+    ret = {"reporter": socket.gethostname(), "note": NOTE, "data": data}
     submit_trace(ret)
 
 
@@ -69,6 +69,9 @@ parser.add_argument("-s", "--server",
 parser.add_argument("-c", "--config",
                     help="path to config file",
                     type=str, dest="conf_file")
+parser.add_argument("-N", "--note",
+                    help="trace note",
+                    type=str, dest="trace_note")
 parser.add_argument("-p", "--procs",
                     help="num procs",
                     default=10,
@@ -99,6 +102,8 @@ if args.server:
     URL = args.server
 else:
     URL = 'http://127.0.0.1:9001/trace'
+
+NOTE = args.trace_note if args.trace_note else None
 ips = []
 
 if args.ips_file:
