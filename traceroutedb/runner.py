@@ -9,8 +9,7 @@ import ezcf
 import tracerouteparser
 import signal
 from argparse import ArgumentParser
-from requests import post
-from requests import ConnectionError
+from requests import post, get, ConnectionError
 from subprocess import check_output
 from multiprocessing import Pool
 import logging
@@ -18,6 +17,15 @@ import logging
 
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def ext_ip():
+    try:
+        resp = get('https://httpbin.org/ip')
+        return resp.json()["origin"]
+    except ConnectionError as e:
+        logging.warning("Could not get external ip:\n", e)
+        return None
 
 
 def submit_trace(result):
@@ -53,7 +61,10 @@ def run_trace(ip):
                                                "ip": probe.ipaddr,
                                                "rtt": probe.rtt,
                                                "anno": probe.anno})
-    ret = {"reporter": socket.gethostname(), "note": NOTE, "data": data}
+    ret = {"reporter": socket.gethostname(),
+           "note": NOTE,
+           "ext_ip": EXT_IP,
+           "data": data}
     submit_trace(ret)
 
 
@@ -102,6 +113,9 @@ if args.server:
     URL = args.server
 else:
     URL = 'http://127.0.0.1:9001/trace'
+
+global EXT_IP
+EXT_IP = ext_ip()
 
 NOTE = args.trace_note if args.trace_note else None
 ips = []

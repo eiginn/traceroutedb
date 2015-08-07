@@ -34,9 +34,7 @@ def receive_traces():
 
         trace = data["data"]
         reporter = data["reporter"]
-        note = data.get("note")
-        if not note:
-            note = "NULL"
+        kvs = {"note": data.get("note"), "ext_ip": data.get("ext_ip")}
 
         if args.debug:
             print("SELECT nextval('traceroute_id_seq');")
@@ -46,9 +44,9 @@ def receive_traces():
             trace_id = cur.fetchone()[0]
 
         if args.debug:
-            print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', '{4}'::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, "note=>" + note))
+            print("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', {4}::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, dictToHstore(kvs)))
         else:
-            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', '{4}'::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, "note=>" + note))
+            cur.execute("INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', {4}::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, dictToHstore(kvs)))
 
         hops = trace["hops"]
         for key in hops.keys():
