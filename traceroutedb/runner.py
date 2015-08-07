@@ -24,7 +24,7 @@ def ext_ip():
         resp = get('https://httpbin.org/ip')
         return resp.json()["origin"]
     except ConnectionError as e:
-        logging.warning("Could not get external ip:\n", e)
+        logging.warning("Could not get external ip:\n" + e)
         return None
 
 
