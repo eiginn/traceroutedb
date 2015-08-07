@@ -74,6 +74,8 @@ parser.add_argument("-S", "--simulate", help="Simulate and don't submit results"
 parser.add_argument("-r", "--read-file",
                     help="read ips from file one per line",
                     type=str, dest="ips_file")
+parser.add_argument("-i", "--ip", help="dst ip for trace, can be givven multiple times",
+                    dest="ips", action="append")
 parser.add_argument("-s", "--server",
                     help="server to send traces to",
                     type=str, dest="server", default=False)
@@ -118,17 +120,21 @@ global EXT_IP
 EXT_IP = ext_ip()
 
 NOTE = args.trace_note if args.trace_note else None
-ips = []
 
-if args.ips_file:
+if args.ips:
+    ips = args.ips
+    if args.ips_file:
+        logging.warning("-i overrides ips from file with -r")
+elif args.ips_file:
+    ips = []
     with open(args.ips_file) as f:
         for line in f:
             ips.append(line.strip())
 else:
-    ips.append('8.8.8.8')
+    ips = ["8.8.8.8"]
 
 
-logging.debug('IP addresses:\n' + str(ips))
+logging.debug('IP addresses: ' + str(ips))
 
 pool = Pool(NUMPROCS, init_worker)
 try:
