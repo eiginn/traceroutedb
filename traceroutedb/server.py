@@ -3,19 +3,42 @@
 from __future__ import print_function
 import psycopg2
 from flask import Flask, request, abort
+from werkzeug.contrib.cache import SimpleCache
 from argparse import ArgumentParser
 import logging
 import sys
+import json
 
 app = Flask(__name__)
+cache = SimpleCache()
 logger = logging.getLogger(__name__)
 
 parser = ArgumentParser()
 parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
+parser.add_argument("-r", "--read-file",
+                    help="read ips from file one per line",
+                    type=str, dest="ips_file")
 args = parser.parse_args()
 
 if args.debug:
     logger.setLevel(logging.DEBUG)
+
+
+CACHE_TIMEOUT = 300
+
+class cached(object):
+
+    def __init__(self, timeout=None):
+        self.timeout = timeout or CACHE_TIMEOUT
+
+    def __call__(self, f):
+        def decorator(*args, **kwargs):
+            response = cache.get(request.path)
+            if response is None:
+                response = f(*args, **kwargs)
+                cache.set(request.path, response, self.timeout)
+            return response
+        return decorator
 
 
 def dictToHstore(in_dict):
@@ -27,9 +50,23 @@ def dictToHstore(in_dict):
     return hstore_str
 
 
-@app.route('/trace', methods=["POST"])
+@app.route("/rules", methods=["GET"])
+@cached()
+def get_rules():
+    ret = {}
+    if args.ips_file:
+        ips = []
+        with open(args.ips_file) as f:
+            for line in f:
+                ips.append(line.strip())
+    else:
+        ips = ["8.8.8.8"]
+    ret["ips"] = ips
+    return json.dumps(ret)
+
+@app.route("/trace", methods=["POST"])
 def receive_traces():
-    if request.method == 'POST':
+    if request.method == "POST":
         cur = conn.cursor()
         data = request.get_json(force=True)
 

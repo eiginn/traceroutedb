@@ -112,9 +112,9 @@ logging.info("Traceroute runner starting")
 
 global URL
 if args.server:
-    URL = args.server
+    URL = "http://" + args.server + "/trace"
 else:
-    URL = 'http://127.0.0.1:9001/trace'
+    URL = "http://" + "127.0.0.1:9001" + "/trace"
 
 global EXT_IP
 EXT_IP = ext_ip()
@@ -142,6 +142,7 @@ try:
 except KeyboardInterrupt:
     print("Caught KeyboardInterrupt, terminating workers")
     pool.terminate()
+    pool.join()
     sys.exit(1)
 
 pool.close()
