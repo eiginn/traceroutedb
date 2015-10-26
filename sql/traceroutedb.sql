@@ -48,8 +48,9 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE annotation (
-    short_name character varying(10),
-    long_name character varying(100)
+    short_name character varying(10) NOT NULL,
+    long_name character varying(100),
+    icmp_code integer
 );
 
 
@@ -128,19 +129,26 @@ ALTER TABLE traceroute_id_seq OWNER TO postgres;
 
 CREATE VIEW trv_trace AS
  SELECT t.reporter,
+    hop.traceroute_id,
     t.origin_ip,
     t.dest_ip,
     hop.probe_id,
-    hop.traceroute_id,
     hop.hop_number,
-    hop.hop_kvs,
     hop.host,
-    hop.cdate
+    hop.hop_kvs
    FROM (traceroute t
      JOIN hop USING (traceroute_id));
 
 
 ALTER TABLE trv_trace OWNER TO postgres;
+
+--
+-- Name: annotation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY annotation
+    ADD CONSTRAINT annotation_pkey PRIMARY KEY (short_name);
+
 
 --
 -- Name: hop_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
