@@ -26,6 +26,7 @@ if args.debug:
 
 CACHE_TIMEOUT = 300
 
+
 class cached(object):
 
     def __init__(self, timeout=None):
@@ -63,6 +64,7 @@ def get_rules():
         ips = ["8.8.8.8"]
     ret["ips"] = ips
     return json.dumps(ret)
+
 
 @app.route("/trace", methods=["POST"])
 def receive_traces():
