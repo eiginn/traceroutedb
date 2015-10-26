@@ -15,7 +15,9 @@ TracerouteDB
 
 Experiment in full mesh historical traceroutes
 
-Lasciate ogne speranza, voi ch'intrate
+Lasciate ogne speranza, voi ch'intrate.
+
+This is an UNFINISHED project and likely won't even work depending on what bad changes have been made at any one time.
 
 * Free software: GPLv2 license
 * Documentation: https://traceroutedb.readthedocs.org.
