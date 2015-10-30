@@ -132,3 +132,11 @@ Annotations are usually bad, lets find them
         |              25 |
         +-----------------+
         SELECT 1
+
+Find missing hops
+    .. code-block:: sql
+        traceroutedb> SELECT previd + 1 as missing FROM ( SELECT DISTINCT hop_number, LAG(hop_number) OVER (ORDER BY hop_number) previd FROM (SELECT DISTINCT hop_number FROM trv_trace WHERE traceroute_id = 1900 ORDER BY hop_number) r ) q WHERE previd <> hop_number - 1 ORDER BY hop_number;
+        |   missing |
+        |-----------|
+        |         7 |
+        SELECT 1

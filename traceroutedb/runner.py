@@ -20,6 +20,10 @@ def init_worker():
 
 
 def ext_ip():
+    """
+    We make the assumtion that we ony have one gateway to any one destination,
+    could be better to use "ip route get $ip" but that won't cover NAT scenario
+    """
     try:
         resp = get('https://httpbin.org/ip')
         return resp.json()["origin"]

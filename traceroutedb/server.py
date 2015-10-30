@@ -139,4 +139,4 @@ if __name__ == '__main__':
     except psycopg2.OperationalError as e:
         logging.error(str(e))
         sys.exit(1)
-    app.run(port=9001, debug=args.debug)
+    app.run(port=9001, debug=args.debug, host='::')
