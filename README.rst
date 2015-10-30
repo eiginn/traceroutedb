@@ -135,8 +135,28 @@ Annotations are usually bad, lets find them
 
 Find missing hops
     .. code-block:: sql
+
         traceroutedb> SELECT previd + 1 as missing FROM ( SELECT DISTINCT hop_number, LAG(hop_number) OVER (ORDER BY hop_number) previd FROM (SELECT DISTINCT hop_number FROM trv_trace WHERE traceroute_id = 1900 ORDER BY hop_number) r ) q WHERE previd <> hop_number - 1 ORDER BY hop_number;
         |   missing |
         |-----------|
         |         7 |
         SELECT 1
+
+
+Find same routers at same distance between N traces
+    .. code-block:: sql
+
+        traceroutedb> SELECT hop_number, ARRAY(SELECT DISTINCT UNNEST(array_agg(host))) FROM trv_trace WHERE traceroute_id IN (1904, 1903) GROUP BY hop_number ORDER BY hop_number;
+        |   hop_number | array                                                                       |
+        |--------------+-----------------------------------------------------------------------------|
+        |            1 | {192.168.43.1}                                                              |
+        |            2 | {172.26.96.169}                                                             |
+        |            3 | {172.16.157.164}                                                            |
+        |            4 | {12.249.2.49}                                                               |
+        |            5 | {12.83.180.82}                                                              |
+        |            6 | {12.122.137.181}                                                            |
+        |            7 | {12.250.31.10}                                                              |
+        |            8 | {209.85.244.23,209.85.241.171}                                              |
+        |            9 | {64.233.174.43,216.239.49.123,216.239.56.127,216.239.56.123,209.85.255.255} |
+        |           10 | {8.8.8.8}                                                                   |
+        SELECT 10
