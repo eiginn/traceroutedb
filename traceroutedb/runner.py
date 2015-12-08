@@ -123,6 +123,9 @@ def runner(config):
         logging.error("No ips defined, exiting")
         sys.exit(1)
 
+# The only reason we need to pack all this info into a list is that
+# we only get to pass one iterable to function from map_async or
+# thats how I (poorly) understand it
     ips_to_iter = []
     for ip in ips:
         ip_dict = {}
