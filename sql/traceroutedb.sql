@@ -39,6 +39,47 @@ COMMENT ON EXTENSION hstore IS 'data type for storing sets of (key, value) pairs
 
 SET search_path = public, pg_catalog;
 
+--
+-- Name: kvs(hstore, hstore[]); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION kvs(INOUT __kvs hstore, VARIADIC __rest hstore[]) RETURNS hstore
+    LANGUAGE plpgsql IMMUTABLE SECURITY DEFINER
+    AS $$
+DECLARE
+    __r             RECORD;
+BEGIN
+    FOR i IN 1 .. array_upper(__rest,1) LOOP
+        IF (__rest[i] IS NOT NULL) THEN
+            __kvs := CASE WHEN (__kvs IS NOT NULL) THEN __kvs || __rest[i] ELSE __rest[i] END;
+        END IF;
+    END LOOP;
+    -- Drop nulls:
+    IF (EXISTS(SELECT 1 FROM EACH(__kvs) WHERE value IS NULL LIMIT 1)) THEN
+        __kvs := hstore_denull(__kvs);
+    END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.kvs(INOUT __kvs hstore, VARIADIC __rest hstore[]) OWNER TO postgres;
+
+--
+-- Name: trace_add_kvs(bigint, hstore); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION trace_add_kvs(INOUT __trace_id bigint, __kvs hstore) RETURNS bigint
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+    UPDATE traceroute SET trace_kvs      = kvs(trace_kvs,__kvs)
+              WHERE traceroute_id       = __trace_id;
+END;
+$$;
+
+
+ALTER FUNCTION public.trace_add_kvs(INOUT __trace_id bigint, __kvs hstore) OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;

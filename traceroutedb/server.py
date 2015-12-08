@@ -61,7 +61,7 @@ def get_rules():
             for line in f:
                 ips.append(line.strip())
     else:
-        ips = ["8.8.8.8"]
+        ips = []
     ret["ips"] = ips
     return json.dumps(ret)
 
