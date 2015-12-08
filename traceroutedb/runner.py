@@ -5,8 +5,6 @@ import sys
 import json
 import socket
 import time
-import os
-import ezcf
 import tracerouteparser
 import signal
 from requests import post, get, ConnectionError
