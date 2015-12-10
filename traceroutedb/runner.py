@@ -45,7 +45,7 @@ def submit_trace(ip_dict, result):
     if result is None:
         return
     if ip_dict["config"].simulate:
-        logging.debug(json.dumps(result))
+        print(json.dumps(result))
     else:
         try:
             r = post(ip_dict["url"], data=json.dumps(result))
@@ -88,7 +88,7 @@ def run_trace(ip_dict):
     submit_trace(ip_dict, ret)
 
 
-def runner(config):
+def run_runner(config):
     NUMPROCS = config.procs
 
     if config.debug:

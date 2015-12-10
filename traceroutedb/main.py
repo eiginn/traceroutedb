@@ -24,11 +24,13 @@ def cli(ctx, configfile, debug, simulate, verbose):
 
 
 @click.command()
+@click.option("-f", "--ips-file", type=click.File("r"), help="read ips from file one per line")
 @click.pass_context
-def server(ctx):
+def server(ctx, ips_file):
     config = ctx.obj["config"]
-    from traceroutedb.server import server
-    server(config)
+    config.ips_file = ips_file
+    from traceroutedb.server import run_server
+    run_server(config)
 
 
 @click.command()
@@ -49,8 +51,8 @@ def runner(ctx, ips_file, hostname, remote_ips, ip, server, note, procs):
     config.server = server
     config.note = note
     config.procs = procs
-    from traceroutedb.runner import runner
-    runner(config)
+    from traceroutedb.runner import run_runner
+    run_runner(config)
 
 
 def cli_entry():

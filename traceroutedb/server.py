@@ -4,7 +4,6 @@ from __future__ import print_function
 import psycopg2
 from flask import Flask, request, abort
 from werkzeug.contrib.cache import SimpleCache
-from argparse import ArgumentParser
 import logging
 import sys
 import json
@@ -12,16 +11,6 @@ import json
 app = Flask(__name__)
 cache = SimpleCache()
 logger = logging.getLogger(__name__)
-
-parser = ArgumentParser()
-parser.add_argument("-d", "--debug", help="debug mode", action="store_true")
-parser.add_argument("-r", "--read-file",
-                    help="read ips from file one per line",
-                    type=str, dest="ips_file")
-args = parser.parse_args()
-
-if args.debug:
-    logger.setLevel(logging.DEBUG)
 
 
 CACHE_TIMEOUT = 300
@@ -54,10 +43,11 @@ def dictToHstore(in_dict):
 @app.route("/rules", methods=["GET"])
 @cached()
 def get_rules():
+    config = app.config["trdb"]
     ret = {}
-    if args.ips_file:
+    if config.ips_file:
         ips = []
-        with open(args.ips_file) as f:
+        with open(config.ips_file) as f:
             for line in f:
                 ips.append(line.strip())
     else:
@@ -68,6 +58,7 @@ def get_rules():
 
 @app.route("/trace", methods=["POST"])
 def receive_traces():
+    config = app.config["trdb"]
     if request.method == "POST":
         cur = conn.cursor()
         data = request.get_json(force=True)
@@ -76,7 +67,7 @@ def receive_traces():
         reporter = data["reporter"]
         kvs = {"note": data.get("note"), "ext_ip": data.get("ext_ip")}
 
-        if args.debug:
+        if config.debug:
             print("SELECT nextval('traceroute_id_seq');")
             trace_id = "DEBUG_ID"
         else:
@@ -89,7 +80,7 @@ def receive_traces():
             trace_id = cur.fetchone()[0]
 
         trace_sql = "INSERT INTO traceroute VALUES ({0}, '{1}', '{2}', now(), '{3}', {4}::HSTORE);".format(trace_id, trace["src_ip"], trace["dst_ip"], reporter, dictToHstore(kvs))
-        if args.debug:
+        if config.debug:
             print(trace_sql)
         else:
             try:
@@ -117,7 +108,7 @@ def receive_traces():
                     anno = "anno=>{}".format(anno)
 
                 kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
-                if args.debug:
+                if config.debug:
                     print("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
                 else:
                     try:
@@ -133,10 +124,16 @@ def receive_traces():
     return 'OK'
 
 
-if __name__ == '__main__':
-    try:
-        conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
-    except psycopg2.OperationalError as e:
-        logging.error(str(e))
-        sys.exit(1)
-    app.run(port=9001, debug=args.debug, host='::')
+try:
+    conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
+except psycopg2.OperationalError as e:
+    logging.error(str(e))
+    sys.exit(1)
+
+
+def run_server(config, app=app):
+    if config.debug:
+        logger.setLevel(logging.DEBUG)
+
+    app.config["trdb"] = config
+    app.run(port=9001, debug=config.debug, host='::')
