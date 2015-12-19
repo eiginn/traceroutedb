@@ -7,6 +7,7 @@ from werkzeug.contrib.cache import SimpleCache
 import logging
 import sys
 import json
+import geoip2.database
 
 app = Flask(__name__)
 cache = SimpleCache()
@@ -59,6 +60,9 @@ def get_rules():
 @app.route("/trace", methods=["POST"])
 def receive_traces():
     config = app.config["trdb"]
+    if config.get("mmdb", False):
+        reader = config["mmdb"]
+
     if request.method == "POST":
         cur = conn.cursor()
         data = request.get_json(force=True)
@@ -94,20 +98,31 @@ def receive_traces():
         for key in hops.keys():
             hop = hops[key]
             for probe in hop:
-                if probe["ip"] is None:
+                if probe["ip"] is None or probe["rtt"] is None:
                     continue
+                else:
+                    try:
+                        probe["isp"] = reader.isp(probe["ip"])
+                    except:
+                        pass
 
+                kvs = {}
                 time = probe.get("rtt", None)
                 if time is not None and time != "None":
-                    time = "time=>{}".format(time)
-                else:
-                    time = ''
+                    kvs["time"] = time
 
                 anno = probe.get("anno", None)
                 if anno:
-                    anno = "anno=>{}".format(anno)
+                    kvs["anno"] = anno
 
-                kvs = "'{0}'".format(",".join([time, anno])) if anno else "'{0}'".format(time)
+                try:
+                    asn = probe.get("isp").raw.get("autonomous_system_number", None)
+                    if asn:
+                        kvs["asn"] = asn
+                except:
+                    pass
+
+                kvs = dictToHstore(kvs)
                 if config.debug:
                     print("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
                 else:
@@ -136,4 +151,8 @@ def run_server(config, app=app):
         logger.setLevel(logging.DEBUG)
 
     app.config["trdb"] = config
+    if config.mmdb:
+        reader = geoip2.database.Reader(config.mmdb)
+        app.config["trdb"]["mmdb"] = reader
+
     app.run(port=9001, debug=config.debug, host='::')

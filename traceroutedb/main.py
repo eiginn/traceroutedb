@@ -24,17 +24,19 @@ def cli(ctx, configfile, debug, simulate, verbose):
 
 
 @click.command()
-@click.option("-f", "--ips-file", type=click.File("r"), help="read ips from file one per line")
+@click.option("-f", "--ips-file", type=str, help="read ips from file one per line")
+@click.option("--mmdb", type=str, help="path to mmdb for isp lookup")
 @click.pass_context
-def server(ctx, ips_file):
+def server(ctx, ips_file, mmdb):
     config = ctx.obj["config"]
     config.ips_file = ips_file
+    config.mmdb = mmdb
     from traceroutedb.server import run_server
     run_server(config)
 
 
 @click.command()
-@click.option("-f", "--ips-file", type=click.File("r"), help="read ips from file one per line")
+@click.option("-f", "--ips-file", type=str, help="read ips from file one per line")
 @click.option("-n", "--hostname", default=None, help="")
 @click.option("-R", "--remote-ips", help="Use ips pulled from server", is_flag=True)
 @click.option("-i", "--ip", help="dst ip for trace, can be given multiple times", multiple=True, type=str)

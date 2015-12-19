@@ -125,12 +125,13 @@ def run_runner(config):
 # we only get to pass one iterable to function from map_async or
 # thats how I (poorly) understand it
     ips_to_iter = []
+    detected_ext_ip = ext_ip()
     for ip in ips:
         ip_dict = {}
         ip = str(ip)
         ip_dict["config"] = config
         ip_dict["note"] = note
-        ip_dict["ext_ip"] = ext_ip()
+        ip_dict["ext_ip"] = detected_ext_ip
         ip_dict["url"] = URL
         ip_dict["ip"] = ip
         ips_to_iter.append(ip_dict)
