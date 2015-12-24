@@ -1,0 +1,19 @@
+verbose: False
+debug: False
+simulate: False
+
+server:
+  ips_file: "./tests/ips"
+  mmdb: "GeoIP2-ISP.mmdb"
+
+runner:
+  ips_file: "./tests/ips"
+#  hostname: ""
+  remote_ips: False
+# will overide ips_file and ips from server (remote_ips)
+#  ips:
+#    - "8.8.8.8"
+#    - "1.1.1.1"
+  server_url: "http://127.0.0.1:9001"
+#    note: "Probably not set in conf"
+  procs: 10

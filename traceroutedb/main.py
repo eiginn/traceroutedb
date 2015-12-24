@@ -2,25 +2,27 @@
 
 import click
 import yaml
+import json
 from config import Config
 
 
 @click.group()
-@click.option("-c", "--configfile", type=click.File("r"), help="")
-@click.option("-d", "--debug", is_flag=True, default=False, help="")
-@click.option("-S", "--simulate", is_flag=True, default=False, help="")
-@click.option("-v", "--verbose", default=0, help="", count=True)
+@click.option("-c", "--configfile", type=str, help="path to yaml config file")
+@click.option("-d", "--debug", is_flag=True, default=False, help="debug mode")
+@click.option("-S", "--simulate", is_flag=True, default=False, help="take no actions")
+@click.option("-v", "--verbose", default=0, count=True, help="verbose, can be given multiple times")
 @click.pass_context
 def cli(ctx, configfile, debug, simulate, verbose):
     config = ctx.obj["config"]
     if configfile:
-        config.update(yaml.safe_load(configfile))
+        with open(configfile, "r") as f:
+            config.update(yaml.safe_load(f))
     config.verbose = verbose
     config.debug = debug
     config.simulate = simulate
     if config.debug:
         print "config:"
-        print config
+        print json.dumps(config, indent=2)
 
 
 @click.command()
@@ -29,30 +31,43 @@ def cli(ctx, configfile, debug, simulate, verbose):
 @click.pass_context
 def server(ctx, ips_file, mmdb):
     config = ctx.obj["config"]
-    config.ips_file = ips_file
-    config.mmdb = mmdb
+    config.update(config.pop("server", {}))
+    if ips_file:
+        config.ips_file = ips_file
+    if mmdb:
+        config.mmdb = mmdb
     from traceroutedb.server import run_server
     run_server(config)
 
 
 @click.command()
 @click.option("-f", "--ips-file", type=str, help="read ips from file one per line")
-@click.option("-n", "--hostname", default=None, help="")
-@click.option("-R", "--remote-ips", help="Use ips pulled from server", is_flag=True)
-@click.option("-i", "--ip", help="dst ip for trace, can be given multiple times", multiple=True, type=str)
-@click.option("-s", "--server", help="server to send traces to")
+@click.option("-n", "--hostname", default=None, help="reported hostname of this machine (reporter)")
+@click.option("-R", "--remote-ips", is_flag=True, help="Use ips pulled from server")
+@click.option("-i", "--ip", multiple=True, type=str, help="dst ip for trace, can be given multiple times")
+@click.option("-s", "--server_url", help="server to send traces to (http://$server_port)")
 @click.option("-N", "--note", help="trace note")
-@click.option("-P", "--procs", type=int, default=10, help="num procs")
+@click.option("-P", "--procs", type=int, help="num procs")
 @click.pass_context
-def runner(ctx, ips_file, hostname, remote_ips, ip, server, note, procs):
+def runner(ctx, ips_file, hostname, remote_ips, ip, server_url, note, procs):
     config = ctx.obj["config"]
-    config.ips_file = ips_file
-    config.hostname = hostname
-    config.remote_ips = remote_ips
-    config.ips = ip
-    config.server = server
-    config.note = note
-    config.procs = procs
+    config.update(config.pop("runner", {}))
+    if ips_file:
+        config.ips_file = ips_file
+    if hostname:
+        config.hostname = hostname
+    if remote_ips:
+        config.remote_ips = remote_ips
+    if ip:
+        config.ips = ip
+    if server_url:
+        config.server_url = server_url
+    if note:
+        config.note = note
+    if procs:
+        config.procs = procs
+    else:
+        config.procs = 10
     from traceroutedb.runner import run_runner
     run_runner(config)
 

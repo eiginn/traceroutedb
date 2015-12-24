@@ -101,10 +101,10 @@ def run_runner(config):
 
     logging.info("Traceroute runner starting")
 
-    if config.server:
-        URL = "http://" + config.server + "/trace"
+    if config.server_url:
+        URL = config.server_url + "/trace"
     else:
-        URL = "http://" + "127.0.0.1:9001" + "/trace"
+        URL = "http://127.0.0.1:9001" + "/trace"
 
     note = config.note if config.note else None
 
