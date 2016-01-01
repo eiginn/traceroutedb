@@ -5,10 +5,10 @@ class Config(dict):
         dict.__init__(self)
 
     def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            raise AttributeError
+        return self[key]
+
+    def __missing__(self, key):
+        return False
 
     def __setattr__(self, key, value):
         self[key] = value
