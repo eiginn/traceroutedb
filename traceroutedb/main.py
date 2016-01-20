@@ -3,7 +3,6 @@
 import click
 import yaml
 import json
-import os
 from config import Config
 
 
@@ -34,7 +33,7 @@ def server(ctx, ips_file, mmdb):
     config = ctx.obj["config"]
     config.update(config.pop("server", {}))
     if ips_file:
-        config.ips_file = os.path.abspath(ips_file)
+        config.ips_file = ips_file
     if mmdb:
         config.mmdb = mmdb
     from traceroutedb.server import run_server
@@ -54,7 +53,7 @@ def runner(ctx, ips_file, hostname, remote_ips, ip, server_url, note, procs):
     config = ctx.obj["config"]
     config.update(config.pop("runner", {}))
     if ips_file:
-        config.ips_file = os.path.abspath(ips_file)
+        config.ips_file = ips_file
     if hostname:
         config.hostname = hostname
     if remote_ips:

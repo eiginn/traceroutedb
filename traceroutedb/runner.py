@@ -108,7 +108,7 @@ def run_runner(config):
 
     note = config.note if config.note else None
 
-    if config.ips:
+    if config.get("ips", False):
         ips = config.ips
         if config.ips_file:
             logging.warning("-i overrides ips from file with -f")
