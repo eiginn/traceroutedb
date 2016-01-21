@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import psycopg2
 from flask import Flask, request, abort
 from werkzeug.contrib.cache import SimpleCache
 import logging
 import sys
 import json
 import geoip2.database
+
+try:
+    import psycopg2
+except ImportError:
+    print("psycopg2 needed to run server")
+    sys.exit(1)
 
 app = Flask(__name__)
 cache = SimpleCache()

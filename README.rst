@@ -2,8 +2,8 @@
 TracerouteDB
 ===============================
 
-.. image:: https://landscape.io/github/eiginn/traceroutedb/master/landscape.svg?style=flat
-        :target: https://landscape.io/github/eiginn/traceroutedb/master
+.. image:: https://scrutinizer-ci.com/g/eiginn/traceroutedb/badges/quality-score.png?b=master
+        :target: https://scrutinizer-ci.com/g/eiginn/traceroutedb/?branch=master
 
 .. image:: https://img.shields.io/pypi/v/traceroutedb.svg
         :target: https://pypi.python.org/pypi/traceroutedb

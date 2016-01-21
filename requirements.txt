@@ -1,6 +1,5 @@
 wheel==0.23.0
 requests
-psycopg2
 flask
 geoip2
 pyyaml
