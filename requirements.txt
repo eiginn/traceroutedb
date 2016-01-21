@@ -2,7 +2,6 @@ wheel==0.23.0
 requests
 psycopg2
 flask
-shelljob
 geoip2
 pyyaml
 click

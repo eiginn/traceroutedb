@@ -18,6 +18,9 @@ requirements = [
     "requests",
     "psycopg2",
     "flask",
+    "click",
+    "pyyaml",
+    "geoip2"
 ]
 
 setup(
