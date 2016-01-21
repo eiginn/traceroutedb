@@ -39,6 +39,7 @@ Courtesy of the Netalyzr project: http://netalyzr.icsi.berkeley.edu
 import cStringIO
 import re
 
+
 class Probe(object):
     """
     Abstraction of an individual probe in a traceroute.
@@ -46,8 +47,8 @@ class Probe(object):
     def __init__(self):
         self.ipaddr = None
         self.name = None
-        self.rtt = None # RTT in ms
-        self.anno = None # Annotation, such as !H, !N, !X, etc
+        self.rtt = None  # RTT in ms
+        self.anno = None  # Annotation, such as !H, !N, !X, etc
 
     def clone(self):
         """
@@ -58,13 +59,14 @@ class Probe(object):
         copy.name = self.name
         return copy
 
+
 class Hop(object):
     """
     A traceroute hop consists of a number of probes.
     """
     def __init__(self):
-        self.idx = None # Hop count, starting at 1
-        self.probes = [] # Series of Probe instances
+        self.idx = None  # Hop count, starting at 1
+        self.probes = []  # Series of Probe instances
 
     def add_probe(self, probe):
         """Adds a Probe instance to this hop's results."""
@@ -86,6 +88,7 @@ class Hop(object):
             last_probe = probe
         return '  '.join(res)
 
+
 class TracerouteParser(object):
     """
     A parser for traceroute text. A traceroute consists of a sequence of
@@ -100,7 +103,7 @@ class TracerouteParser(object):
         self.hops = []
 
     def __str__(self):
-        res = ['traceroute to %s (%s)' % (self.dest_name, self.dest_ip) ]
+        res = ['traceroute to %s (%s)' % (self.dest_name, self.dest_ip)]
         ctr = 1
         for hop in self.hops:
             res.append('%2d  %s' % (ctr, str(hop)))
@@ -166,7 +169,7 @@ class TracerouteParser(object):
                 probe.name = tok1
                 probe.ipaddr = tok2.translate(None, '()')
                 probe.rtt = float(parts.pop(0))
-                parts.pop(0) # Drop "ms"
+                parts.pop(0)  # Drop "ms"
                 if len(parts) > 0 and parts[0].startswith('!'):
                     probe.anno = parts.pop(0)
 
