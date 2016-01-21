@@ -44,7 +44,7 @@ def ext_ip():
 def submit_trace(ip_dict, result):
     if result is None:
         return
-    if ip_dict["config"].simulate:
+    if ip_dict.get("simulate"):
         print(json.dumps(result))
     else:
         try:
@@ -101,16 +101,14 @@ def run_runner(config):
 
     logging.info("Traceroute runner starting")
 
-    if config.server_url:
+    if config.get("server_url", False):
         URL = config.server_url + "/trace"
     else:
         URL = "http://127.0.0.1:9001" + "/trace"
 
-    note = config.note if config.note else None
-
     if config.get("ips", False):
         ips = config.ips
-        if config.ips_file:
+        if config.get("ips_file", False):
             logging.warning("-i overrides ips from file with -f")
     elif config.ips_file:
         ips = []
@@ -129,11 +127,11 @@ def run_runner(config):
     for ip in ips:
         ip_dict = {}
         ip = str(ip)
-        ip_dict["config"] = config
-        ip_dict["note"] = note
+        ip_dict["note"] = config.get("note", None)
         ip_dict["ext_ip"] = detected_ext_ip
         ip_dict["url"] = URL
         ip_dict["ip"] = ip
+        ip_dict["simulate"] = config.get("simulate", None)
         ips_to_iter.append(ip_dict)
 
     logging.debug('IP addresses: ' + str(ips))
