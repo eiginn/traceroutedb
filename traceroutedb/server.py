@@ -55,7 +55,7 @@ def get_rules():
         logging.error(str(e))
         abort(503)
     cur = connv.cursor()
-    cur.execute("SELECT * FROM tr_endpoints;")
+    cur.execute("SELECT * FROM endpoints;")
     rows = cur.fetchall()
     connv.close()
     return json.dumps(rows)

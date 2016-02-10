@@ -102,7 +102,7 @@ ALTER TABLE annotation OWNER TO postgres;
 --
 
 CREATE TABLE endpoints (
-    host text,
+    name text,
     ip inet
 );
 
@@ -145,18 +145,6 @@ CREATE SEQUENCE probe_id_seq
 
 
 ALTER TABLE probe_id_seq OWNER TO postgres;
-
---
--- Name: tr_endpoints; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
---
-
-CREATE TABLE tr_endpoints (
-    name text,
-    ip inet
-);
-
-
-ALTER TABLE tr_endpoints OWNER TO postgres;
 
 --
 -- Name: traceroute_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
