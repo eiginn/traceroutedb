@@ -49,17 +49,16 @@ def dictToHstore(in_dict):
 @app.route("/rules", methods=["GET"])
 @cached()
 def get_rules():
-    config = app.config["trdb"]
-    ret = {}
-    if config.ips_file:
-        ips = []
-        with open(config.ips_file) as f:
-            for line in f:
-                ips.append(line.strip())
-    else:
-        ips = []
-    ret["ips"] = ips
-    return json.dumps(ret)
+    try:
+        connv = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
+    except psycopg2.OperationalError as e:
+        logging.error(str(e))
+        abort(503)
+    cur = connv.cursor()
+    cur.execute("SELECT * FROM tr_endpoints;")
+    rows = cur.fetchall()
+    connv.close()
+    return json.dumps(rows)
 
 
 @app.route("/trace", methods=["POST"])

@@ -98,6 +98,18 @@ CREATE TABLE annotation (
 ALTER TABLE annotation OWNER TO postgres;
 
 --
+-- Name: endpoints; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE endpoints (
+    host text,
+    ip inet
+);
+
+
+ALTER TABLE endpoints OWNER TO postgres;
+
+--
 -- Name: hop; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -135,20 +147,16 @@ CREATE SEQUENCE probe_id_seq
 ALTER TABLE probe_id_seq OWNER TO postgres;
 
 --
--- Name: traceroute; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: tr_endpoints; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE TABLE traceroute (
-    traceroute_id bigint NOT NULL,
-    origin_ip inet,
-    dest_ip inet,
-    cdate timestamp with time zone DEFAULT now(),
-    reporter text,
-    trace_kvs hstore
+CREATE TABLE tr_endpoints (
+    name text,
+    ip inet
 );
 
 
-ALTER TABLE traceroute OWNER TO postgres;
+ALTER TABLE tr_endpoints OWNER TO postgres;
 
 --
 -- Name: traceroute_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -163,6 +171,22 @@ CREATE SEQUENCE traceroute_id_seq
 
 
 ALTER TABLE traceroute_id_seq OWNER TO postgres;
+
+--
+-- Name: traceroute; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE traceroute (
+    traceroute_id bigint DEFAULT nextval('traceroute_id_seq'::regclass) NOT NULL,
+    origin_ip inet,
+    dest_ip inet,
+    cdate timestamp with time zone DEFAULT now(),
+    reporter text,
+    trace_kvs hstore
+);
+
+
+ALTER TABLE traceroute OWNER TO postgres;
 
 --
 -- Name: trv_trace; Type: VIEW; Schema: public; Owner: postgres
@@ -205,6 +229,14 @@ ALTER TABLE ONLY hop
 
 ALTER TABLE ONLY traceroute
     ADD CONSTRAINT traceroute_pkey PRIMARY KEY (traceroute_id);
+
+
+--
+-- Name: uni_endp_ip; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY endpoints
+    ADD CONSTRAINT uni_endp_ip UNIQUE (ip);
 
 
 --
@@ -251,3 +283,4 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 --
 -- PostgreSQL database dump complete
 --
+
