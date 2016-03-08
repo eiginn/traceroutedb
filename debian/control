@@ -1,0 +1,13 @@
+Source: traceroutedb
+Section: python
+Priority: extra
+Maintainer: Ryan Carter <ryan@cloudflare.com>
+Build-Depends: debhelper (>= 9), python, dh-virtualenv (>= 0.7)
+Standards-Version: 3.9.5
+
+Package: traceroutedb
+Architecture: any
+Pre-Depends: dpkg (>= 1.16.1), python2.7-minimal | python2.6-minimal, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}
+Description: An experiment in full mesh historical traceroutes
+ An experiment in full mesh historical traceroutes

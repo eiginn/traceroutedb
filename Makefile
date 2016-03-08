@@ -68,3 +68,11 @@ dist: clean
 
 install: clean
 	python setup.py install
+
+deb-prereq:
+	sudo apt-get update
+	sudo apt-get install dh-virtualenv debhelper devscripts python-all libffi-dev libpq-dev
+	# sudo pip install make-deb
+
+deb: clean
+	dpkg-buildpackage -us -uc

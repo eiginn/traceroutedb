@@ -3,3 +3,4 @@ ips
 traceroutedb.egg-info
 GeoIP2-ISP.mmdb
 endpoints.sql
+*.deb

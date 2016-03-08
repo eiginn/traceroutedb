@@ -1,6 +1,7 @@
-wheel==0.23.0
+wheel
 requests
 flask
 geoip2
 pyyaml
 click
+ndg-httpsclient
