@@ -1,10 +1,11 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-pyc clean-build docs clean clean-deb
 
 help:
-	@echo "clean - remove all build, test, coverage and Python artifacts"
+	@echo "clean - remove all build, test, coverage, deb build, and Python artifacts"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
+	@echo "clean-deb - remove deb build artifacts"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
@@ -12,9 +13,10 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "dist - package"
+	@echo "deb - deb package"
 	@echo "install - install the package to the active Python's site-packages"
 
-clean: clean-build clean-pyc clean-test
+clean: clean-build clean-pyc clean-test clean-deb
 
 clean-build:
 	rm -fr build/
@@ -33,6 +35,14 @@ clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+
+clean-deb:
+	rm -rf debian/debhelper-build-stamp \
+	       debian/files \
+	       debian/traceroutedb.debhelper.log \
+	       debian/traceroutedb.postinst.debhelper \
+	       debian/traceroutedb.substvars \
+	       debian/traceroutedb
 
 lint:
 	flake8 traceroutedb tests
