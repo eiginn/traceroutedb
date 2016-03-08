@@ -1,6 +1,6 @@
 traceroutedb (0.1.0) unstable; urgency=low
 
-  * 96c37f5 add endpoints.sql to gitignore
+  * 2dd3b30 make debian package
 
 
- -- Ryan Carter <ryan@cloudflare.com>  Mon, 07 Mar 2016 23:29:49 +0000
+ -- Ryan Carter <ryan@cloudflare.com>  Mon, 07 Mar 2016 23:49:11 +0000
