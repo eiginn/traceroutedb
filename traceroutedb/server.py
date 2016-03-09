@@ -10,6 +10,7 @@ import geoip2.database
 
 try:
     import psycopg2
+    from psycopg2 import extras as pgextras
 except ImportError:
     print("psycopg2 needed to run server")
     sys.exit(1)
@@ -141,6 +142,16 @@ def receive_traces():
     conn.commit()
     print("ip:", request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"], "trace_id:", trace_id)
     return 'OK'
+
+
+@app.route("/trace/<trace_id>", methods=["GET"])
+def lookup_trace(trace_id):
+    cur = conn.cursor(cursor_factory=pgextras.DictCursor)
+    pgextras.register_hstore(cur)
+    cur.execute("SELECT * FROM trv_trace WHERE traceroute_id = {id} ORDER BY traceroute_id,hop_number;".format(id=trace_id))
+    rows = cur.fetchall()
+    out = [json.dumps(x) for x in rows]
+    return "\n".join(out)
 
 
 try:
