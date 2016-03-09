@@ -7,6 +7,7 @@ import logging
 import sys
 import json
 import geoip2.database
+from tabulate import tabulate
 
 try:
     import psycopg2
@@ -150,8 +151,13 @@ def lookup_trace(trace_id):
     pgextras.register_hstore(cur)
     cur.execute("SELECT * FROM trv_trace WHERE traceroute_id = {id} ORDER BY traceroute_id,hop_number;".format(id=trace_id))
     rows = cur.fetchall()
-    out = [json.dumps(x) for x in rows]
-    return "\n".join(out)
+    if "table" in request.args:
+        headers = ["reporter", "traceroute_id", "origin_ip", "dest_ip", "probe_id",
+                   "hop_number", "host", "hop_kvs"]
+        return tabulate(rows, headers, tablefmt="psql")
+    else:
+        out = [json.dumps(x) for x in rows]
+        return "\n".join(out)
 
 
 try:

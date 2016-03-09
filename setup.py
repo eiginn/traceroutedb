@@ -19,7 +19,8 @@ requirements = [
     "flask",
     "click",
     "pyyaml",
-    "geoip2"
+    "geoip2",
+    "tabulate"
 ]
 
 setup(
