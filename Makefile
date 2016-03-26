@@ -41,7 +41,6 @@ clean-deb:
 	       debian/files \
 	       debian/traceroutedb.debhelper.log \
 	       debian/traceroutedb.postinst.debhelper \
-	       debian/traceroutedb.substvars \
 	       debian/traceroutedb
 
 lint:
