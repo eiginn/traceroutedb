@@ -3,15 +3,15 @@
 --
 
 COPY annotation (short_name, long_name) FROM stdin;
-!H      host unreachable
-!N      network unreachable
-!P      protocol unreachable
-!S      source route failed
-!F      fragmentation needed
-!X      communication administratively prohibited
-!V      host precedence violation
-!C      precedence  cutoff in effect
-!8      source host isolated
+!H	host unreachable
+!N	network unreachable
+!P	protocol unreachable
+!S	source route failed
+!F	fragmentation needed
+!X	communication administratively prohibited
+!V	host precedence violation
+!C	precedence  cutoff in effect
+!8	source host isolated
 \.
 
 

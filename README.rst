@@ -160,3 +160,23 @@ Find same routers at same distance between N traces
         |            9 | {64.233.174.43,216.239.49.123,216.239.56.127,216.239.56.123,209.85.255.255} |
         |           10 | {8.8.8.8}                                                                   |
         SELECT 10
+
+
+Aggregate times from hops
+    .. code-block:: sql
+
+        traceroutedb> SELECT hop_number,host,array_agg(cast(hop_kvs->'time' as double precision)) as time FROM trv_trace WHERE traceroute_id IN (634) GROUP BY host,traceroute_id,hop_number ORDER BY traceroute_id,hop_number;
+        |   hop_number | host          | time                        |
+        |-------------:|:--------------|:----------------------------|
+        |            1 | 192.168.88.1  | [1.936, 1.942, 1.951]       |
+        |            2 | 10.0.0.1      | [1.921, 1.927, 1.933]       |
+        |            3 | 96.120.89.253 | [14.356, 40.597, 9.585]     |
+        |            4 | 162.151.31.33 | [40.776, 40.778, 40.707]    |
+        |            5 | 68.87.193.129 | [42.149, 41.617, 42.142]    |
+        |            6 | 68.86.90.93   | [10.756, 37.888, 41.095]    |
+        |            7 | 68.86.87.158  | [17.67, 17.664, 17.689]     |
+        |            8 | 68.86.86.222  | [17.318, 15.512, 17.035]    |
+        |            9 | 66.208.216.42 | [19.326]                    |
+        |            9 | 66.208.216.38 | [21.398]                    |
+        |            9 | 66.208.216.34 | [21.353]                    |
+        SELECT 11

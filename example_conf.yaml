@@ -8,12 +8,16 @@ server:
 
 runner:
   ips_file: "./tests/ips"
-#  hostname: ""
+  # hostname: ""
   remote_ips: False
-# will overide ips_file and ips from server (remote_ips)
-#  ips:
-#    - "8.8.8.8"
-#    - "1.1.1.1"
+  # will overide ips_file and ips from server (remote_ips)
+  # ips:
+  #   - "8.8.8.8"
+  #   - "1.1.1.1"
   server_url: "http://127.0.0.1:9001"
-#    note: "Probably not set in conf"
   procs: 10
+  # Multiple parsers are planned, currently the NANOG traceroute is supported,
+  #     vanilla "traceroute" pkg on Debian
+  # DO NOT use /usr/bin/traceroute or just traceroute, on debian the alternatives
+  # system could mess this up if you h`ave more than one traceroute installed
+  traceroute_bin: /usr/bin/traceroute-nanog
