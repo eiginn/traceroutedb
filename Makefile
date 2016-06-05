@@ -85,3 +85,6 @@ deb-prereq:
 
 deb: clean
 	dpkg-buildpackage -us -uc
+
+dev-db:
+	./sql/dev-db.sh
