@@ -9,3 +9,4 @@ debian/files
 debian/traceroutedb.debhelper.log
 debian/traceroutedb.postinst.debhelper
 debian/traceroutedb
+get_ips.sh
