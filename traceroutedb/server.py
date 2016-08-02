@@ -43,7 +43,7 @@ def dictToHstore(in_dict):
     single_kvs = []
     for key in in_dict.iterkeys():
         if in_dict[key]:
-            single_kvs.append("{0}=>{1}".format(key, in_dict[key]))
+            single_kvs.append('{0}=>"{1}"'.format(key, in_dict[key]))
     hstore_str = "'{0}'".format(", ".join(single_kvs))
     return hstore_str
 

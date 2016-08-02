@@ -113,8 +113,10 @@ def run_runner(config):
     elif config.ips_file:
         ips = []
         with open(config.ips_file) as f:
-            for line in f:
-                ips.append(line.strip())
+            for line in f.readlines():
+                if line.strip().startswith("#"):
+                    continue
+                ips.append(line.strip().split(",")[1])
     else:
         logging.error("No ips defined, exiting")
         sys.exit(1)
