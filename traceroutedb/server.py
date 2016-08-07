@@ -7,6 +7,7 @@ import logging
 import sys
 import json
 import geoip2.database
+from geoip2.errors import AddressNotFoundError
 from tabulate import tabulate
 
 try:
@@ -109,8 +110,8 @@ def receive_traces():
                 else:
                     try:
                         probe["isp"] = reader.isp(probe["ip"])
-                    except:
-                        pass
+                    except AddressNotFoundError:
+                        probe["isp"] = None
 
                 kvs = {}
                 time = probe.get("rtt", None)
@@ -121,12 +122,9 @@ def receive_traces():
                 if anno:
                     kvs["anno"] = anno
 
-                try:
-                    asn = probe.get("isp").raw.get("autonomous_system_number", None)
-                    if asn:
-                        kvs["asn"] = asn
-                except:
-                    pass
+                asn = probe.get("isp").raw.get("autonomous_system_number", None)
+                if asn:
+                    kvs["asn"] = asn
 
                 kvs = dictToHstore(kvs)
                 if config.debug:
