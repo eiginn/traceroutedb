@@ -16,8 +16,8 @@ import logging
 ON_POSIX = 'posix' in sys.builtin_module_names
 
 
-def init_worker():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+def init_worker(handler=signal.SIG_IGN):
+    signal.signal(signal.SIGINT, handler)
 
 
 def own_ips():
@@ -96,17 +96,20 @@ def submit_trace(ip_dict, result):
 
 
 def run_trace(ip_pack):
+
     ip = ip_pack["ip"]
     if ip in OWN_IPS:
         return None
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     try:
         proc = Popen(["/usr/sbin/traceroute", ip, "30"], stdout=PIPE, stderr=PIPE)  # noqa
         out, err = proc.communicate()
     except KeyboardInterrupt:
-        print("caught kbd int")
         proc.terminate()
         proc.kill()
         return None
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]  # noqa
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
@@ -155,9 +158,7 @@ def run_runner(config):
     logging.debug('IP addresses: ' + str(ips))
     logging.debug(str(ips_pack))
 
-    # original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     pool = Pool(NUMPROCS, init_worker)
-    # signal.signal(signal.SIGINT, original_sigint_handler)
     try:
         logging.info("Starting workers")
         res = pool.map_async(run_trace, ips_pack, 1)
