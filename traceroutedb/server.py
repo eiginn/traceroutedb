@@ -3,12 +3,12 @@
 from __future__ import print_function
 from flask import Flask, request, abort
 from werkzeug.contrib.cache import SimpleCache
-import logging
 import sys
 import json
 import geoip2.database
 from geoip2.errors import AddressNotFoundError
 from tabulate import tabulate
+from traceroutedb.log import logger
 
 try:
     import psycopg2
@@ -19,7 +19,6 @@ except ImportError:
 
 app = Flask(__name__)
 cache = SimpleCache()
-logger = logging.getLogger(__name__)
 
 
 CACHE_TIMEOUT = 300
@@ -55,7 +54,7 @@ def get_rules():
     try:
         connv = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
     except psycopg2.OperationalError as e:
-        logging.error(str(e))
+        logger.error(str(e))
         abort(503)
     cur = connv.cursor()
     cur.execute("SELECT * FROM endpoints;")
@@ -85,7 +84,7 @@ def receive_traces():
             try:
                 cur.execute("SELECT nextval('traceroute_id_seq');")
             except psycopg2.ProgrammingError as e:
-                logging.error(str(e))
+                logger.error(str(e))
                 conn.rollback()
                 abort(503)
             trace_id = cur.fetchone()[0]
@@ -97,7 +96,7 @@ def receive_traces():
             try:
                 cur.execute(trace_sql)
             except psycopg2.ProgrammingError as e:
-                logging.error(str(e))
+                logger.error(str(e))
                 conn.rollback()
                 abort(503)
 
@@ -122,7 +121,7 @@ def receive_traces():
                 if anno:
                     kvs["anno"] = anno
 
-                asn = probe.get("isp").raw.get("autonomous_system_number", None)
+                asn = probe.get("isp").raw.get("autonomous_system_number", None) if probe.get("isp") else False
                 if asn:
                     kvs["asn"] = asn
 
@@ -133,13 +132,13 @@ def receive_traces():
                     try:
                         cur.execute("INSERT INTO hop VALUES (nextval('probe_id_seq'), {0}, {1}, {2}, '{3}', now());".format(trace_id, key, kvs, probe["ip"]))
                     except psycopg2.ProgrammingError as e:
-                        logging.error(str(e))
+                        logger.error(str(e))
                         conn.rollback()
                         abort(503)
     conn.commit()
     cur.close()
     conn.commit()
-    print("ip:", request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"], "trace_id:", trace_id)
+    print(request.remote_addr, "submitted result for:", trace["src_ip"], ">", trace["dst_ip"], "trace_id:", trace_id)
     return 'OK'
 
 
@@ -161,17 +160,15 @@ def lookup_trace(trace_id):
 try:
     conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
 except psycopg2.OperationalError as e:
-    logging.error(str(e))
+    logger.error(str(e))
     sys.exit(1)
 
 
 def run_server(config, app=app):
-    if config.debug:
-        logger.setLevel(logging.DEBUG)
-
     app.config["trdb"] = config
     if config.mmdb:
         reader = geoip2.database.Reader(config.mmdb)
         app.config["trdb"]["mmdb"] = reader
 
+    logger.warn("Starting sever")
     app.run(port=9001, debug=config.debug, host='::')

@@ -7,7 +7,9 @@ logging_config = dict(
     disable_existing_loggers=True,
     formatters={
         "f": {"format":
-              "%(name)s %(asctime)s %(levelname)s %(message)s"}
+              "TracerouteDB %(asctime)s %(levelname)s %(message)s",
+              "datefmt": "%Y-%m-%d %H:%M:%S",
+              },
     },
     handlers={
         "h": {
@@ -26,10 +28,9 @@ logging_config = dict(
             "handlers": ["null"],
             "propagate": False,
         },
-        # "requests.packages.urllib3.connectionpool": {
-        #     "handlers": ["h"],
-        #     "propagate": False,
-        # },
+        "traceroutedb": {
+            "handlers": ["h"],
+        },
     }
 
 )
