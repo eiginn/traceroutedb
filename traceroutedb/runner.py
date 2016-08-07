@@ -10,7 +10,7 @@ import signal
 from requests import post, get, ConnectionError
 from subprocess import check_output, Popen, PIPE
 from multiprocessing import Pool
-import logging
+from traceroutedb.log import logger
 
 
 ON_POSIX = 'posix' in sys.builtin_module_names
@@ -37,7 +37,7 @@ def ext_ip():
         resp = get('https://httpbin.org/ip')
         return resp.json()["origin"]
     except ConnectionError as e:
-        logging.warning("Could not get external ip:\n" + str(e))
+        logger.warning("Could not get external ip:\n" + str(e))
         return None
 
 
@@ -68,7 +68,7 @@ def calc_ips(config):
     if config.get("ips", False):
         ips = config.ips
         if config.get("ips_file", False):
-            logging.warning("-i overrides ips from file with -f")
+            logger.warning("-i overrides ips from file with -f")
     elif config.ips_file:
         ips = []
         with open(config.ips_file) as f:
@@ -77,7 +77,7 @@ def calc_ips(config):
                     continue
                 ips.append(line.strip().split(",")[1])
     else:
-        logging.error("No ips defined, exiting")
+        logger.error("No ips defined, exiting")
         sys.exit(1)
     return ips
 
@@ -90,7 +90,7 @@ def submit_trace(ip_dict, result):
     else:
         try:
             r = post(ip_dict["url"], data=json.dumps(result))
-            logging.debug(r)
+            logger.debug(r)
         except ConnectionError as e:
             print(e)
 
@@ -133,16 +133,7 @@ def run_trace(ip_pack):
     submit_trace(ip_pack, ret)
 
 
-def run_runner(config):
-    NUMPROCS = config.procs
-
-    if config.debug:
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger("requests").setLevel(logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-        logging.getLogger("requests").setLevel(logging.WARNING)
-
+def runner_entry(config):
     if config.get("server_url", False):
         URL = config.server_url + "/trace"
     else:
@@ -150,17 +141,17 @@ def run_runner(config):
 
     start_time = time.time()
 
-    logging.info("Traceroute runner starting")
+    logger.warn("Traceroute runner starting")
 
     ips = calc_ips(config)
     ips_pack = pack_ips(ips, config, URL)
 
-    logging.debug('IP addresses: ' + str(ips))
-    logging.debug(str(ips_pack))
+    logger.debug('IP addresses: ' + str(ips))
+    logger.debug(str(ips_pack))
 
-    pool = Pool(NUMPROCS, init_worker)
+    pool = Pool(config.procs, init_worker)
     try:
-        logging.info("Starting workers")
+        logger.warn("Starting workers")
         res = pool.map_async(run_trace, ips_pack, 1)
         res.get(9999999)
     except KeyboardInterrupt:
@@ -171,5 +162,5 @@ def run_runner(config):
     pool.join()
 
     end_time = time.time()
-    logging.info("Traceroute runner done, Took: " +
-                 str(int(end_time - start_time)) + " seconds")
+    logger.warn("Traceroute runner done, Took: " +
+                str(int(end_time - start_time)) + " seconds")

@@ -3,6 +3,7 @@
 import click
 import yaml
 import json
+import logging
 from config import Config
 
 
@@ -21,8 +22,11 @@ def cli(ctx, configfile, debug, simulate, verbose):
     config.debug = debug
     config.simulate = simulate
     if config.debug:
+        logging.basicConfig(level=logging.DEBUG)
         print "config:"
         print json.dumps(config, indent=2)
+    else:
+        logging.basicConfig(level=logging.WARNING)
 
 
 @click.command()
@@ -68,8 +72,8 @@ def runner(ctx, ips_file, hostname, remote_ips, ip, server_url, note, procs):
         config.procs = procs
     else:
         config.procs = 10
-    from traceroutedb.runner import run_runner
-    run_runner(config)
+    from traceroutedb.runner import runner_entry
+    runner_entry(config)
 
 
 def cli_entry():
