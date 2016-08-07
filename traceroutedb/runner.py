@@ -41,6 +41,47 @@ def ext_ip():
         return None
 
 
+def pack_ips(ips, config, URL):
+    """
+    The only reason we need to pack all this info into a list is that
+    we only get to pass one iterable to function from map_async or
+    thats how I (poorly) understand it
+    """
+    ret = []
+    detected_ext_ip = ext_ip()
+    for ip in ips:
+        ip_dict = {}
+        ip = str(ip)
+        ip_dict["note"] = config.get("note", None)
+        ip_dict["ext_ip"] = detected_ext_ip
+        ip_dict["url"] = URL
+        ip_dict["ip"] = ip
+        ip_dict["simulate"] = config.get("simulate", None)
+        ret.append(ip_dict)
+    return ret
+
+
+def calc_ips(config):
+    """
+    Collapse ips from file and command line
+    """
+    if config.get("ips", False):
+        ips = config.ips
+        if config.get("ips_file", False):
+            logging.warning("-i overrides ips from file with -f")
+    elif config.ips_file:
+        ips = []
+        with open(config.ips_file) as f:
+            for line in f.readlines():
+                if line.strip().startswith("#"):
+                    continue
+                ips.append(line.strip().split(",")[1])
+    else:
+        logging.error("No ips defined, exiting")
+        sys.exit(1)
+    return ips
+
+
 def submit_trace(ip_dict, result):
     if result is None:
         return
@@ -54,18 +95,19 @@ def submit_trace(ip_dict, result):
             print(e)
 
 
-def run_trace(ip_dict):
-    ip = ip_dict["ip"]
+def run_trace(ip_pack):
+    ip = ip_pack["ip"]
     if ip in OWN_IPS:
         return None
     try:
-        proc = Popen(["/usr/sbin/traceroute", ip, "30"], stdout=PIPE, stderr=PIPE)
+        proc = Popen(["/usr/sbin/traceroute", ip, "30"], stdout=PIPE, stderr=PIPE)  # noqa
         out, err = proc.communicate()
     except KeyboardInterrupt:
+        print("caught kbd int")
         proc.terminate()
         proc.kill()
         return None
-    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]
+    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]  # noqa
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
     data = {}
@@ -82,10 +124,10 @@ def run_trace(ip_dict):
                                                "rtt": probe.rtt,
                                                "anno": probe.anno})
     ret = {"reporter": socket.gethostname(),
-           "note": ip_dict["note"],
-           "ext_ip": ip_dict["ext_ip"],
+           "note": ip_pack["note"],
+           "ext_ip": ip_pack["ext_ip"],
            "data": data}
-    submit_trace(ip_dict, ret)
+    submit_trace(ip_pack, ret)
 
 
 def run_runner(config):
@@ -97,58 +139,36 @@ def run_runner(config):
     else:
         logging.basicConfig(level=logging.WARNING)
         logging.getLogger("requests").setLevel(logging.WARNING)
-    start_time = time.time()
-
-    logging.info("Traceroute runner starting")
 
     if config.get("server_url", False):
         URL = config.server_url + "/trace"
     else:
         URL = "http://127.0.0.1:9001" + "/trace"
 
-    if config.get("ips", False):
-        ips = config.ips
-        if config.get("ips_file", False):
-            logging.warning("-i overrides ips from file with -f")
-    elif config.ips_file:
-        ips = []
-        with open(config.ips_file) as f:
-            for line in f.readlines():
-                if line.strip().startswith("#"):
-                    continue
-                ips.append(line.strip().split(",")[1])
-    else:
-        logging.error("No ips defined, exiting")
-        sys.exit(1)
+    start_time = time.time()
 
-# The only reason we need to pack all this info into a list is that
-# we only get to pass one iterable to function from map_async or
-# thats how I (poorly) understand it
-    ips_to_iter = []
-    detected_ext_ip = ext_ip()
-    for ip in ips:
-        ip_dict = {}
-        ip = str(ip)
-        ip_dict["note"] = config.get("note", None)
-        ip_dict["ext_ip"] = detected_ext_ip
-        ip_dict["url"] = URL
-        ip_dict["ip"] = ip
-        ip_dict["simulate"] = config.get("simulate", None)
-        ips_to_iter.append(ip_dict)
+    logging.info("Traceroute runner starting")
+
+    ips = calc_ips(config)
+    ips_pack = pack_ips(ips, config, URL)
 
     logging.debug('IP addresses: ' + str(ips))
-    logging.debug(str(ips_to_iter))
+    logging.debug(str(ips_pack))
 
+    # original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    pool = Pool(NUMPROCS, init_worker)
+    # signal.signal(signal.SIGINT, original_sigint_handler)
     try:
-        pool = Pool(NUMPROCS, init_worker)
-        pool.map_async(run_trace, ips_to_iter, 1).get(9999999)
-        pool.close()
-        pool.join()
+        logging.info("Starting workers")
+        res = pool.map_async(run_trace, ips_pack, 1)
+        res.get(9999999)
     except KeyboardInterrupt:
         print("Caught KeyboardInterrupt, terminating workers")
         pool.terminate()
-        pool.join()
-        sys.exit(1)
+    finally:
+        pool.close()
+    pool.join()
 
     end_time = time.time()
-    logging.info("Traceroute runner done, Took: " + str(int(end_time - start_time)) + " seconds")
+    logging.info("Traceroute runner done, Took: " +
+                 str(int(end_time - start_time)) + " seconds")
