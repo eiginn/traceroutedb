@@ -4,7 +4,9 @@ import click
 import yaml
 import json
 import logging
-from config import Config
+import os
+import sys
+from config import Config, create_config
 
 
 @click.group()
@@ -18,6 +20,16 @@ def cli(ctx, configfile, debug, simulate, verbose):
     if configfile:
         with open(configfile, "r") as f:
             config.update(yaml.safe_load(f))
+    elif os.path.isfile(os.path.expanduser("~/.trdb.yaml")):
+        with open(os.path.expanduser("~/.trdb.yaml"), "r") as f:
+            config.update(yaml.safe_load(f))
+    elif os.path.isfile("/etc/trdb/conf.yaml"):
+        with open("/etc/trdb/conf.yaml", "r") as f:
+            config.update(yaml.safe_load(f))
+    else:
+        create_config()
+        print "wrote config out to ~/.trdb.yaml"
+        sys.exit(1)
     config.verbose = verbose
     config.debug = debug
     config.simulate = simulate
@@ -25,8 +37,11 @@ def cli(ctx, configfile, debug, simulate, verbose):
         logging.basicConfig(level=logging.DEBUG)
         print "config:"
         print json.dumps(config, indent=2)
+    elif verbose:
+        lvl = logging.ERROR - (verbose * 10)
+        logging.basicConfig(level=lvl)
     else:
-        logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.ERROR)
 
 
 @click.command()
