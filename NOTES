@@ -1,0 +1,2 @@
+match on ttl exceeded and where encapsulated payload is ip dst 8.8.8.8
+sudo tcpdump -i wlp4s0 -nnvvXSs 0 'icmp and icmp[24:4] == 0x08080808'
