@@ -52,7 +52,7 @@ def dictToHstore(in_dict):
 @cached()
 def get_rules():
     try:
-        connv = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
+        connv = psycopg2.connect("dbname=trdb user=postgres host=localhost")
     except psycopg2.OperationalError as e:
         logger.error(str(e))
         abort(503)
@@ -158,7 +158,7 @@ def lookup_trace(trace_id):
 
 
 try:
-    conn = psycopg2.connect("dbname=traceroutedb user=postgres host=localhost")
+    conn = psycopg2.connect("dbname=trdb user=postgres host=localhost")
 except psycopg2.OperationalError as e:
     logger.error(str(e))
     sys.exit(1)

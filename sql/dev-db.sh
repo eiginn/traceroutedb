@@ -8,7 +8,7 @@ PG_RESTORE=/usr/bin/pg_restore
 CREATEDB=/usr/bin/createdb
 DROPDB=/usr/bin/dropdb
 PSQL=/usr/bin/psql
-DATABASE=traceroutedb
+DATABASE=trdb
 
 
 if ! [[ -e $PG_RESTORE ]]; then
