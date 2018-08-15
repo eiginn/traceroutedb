@@ -4,5 +4,6 @@ flask
 geoip2
 pyyaml
 click
+click-completion
 ndg-httpsclient
 tabulate

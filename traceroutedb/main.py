@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import click
+import click_completion
 import yaml
 import json
 import logging
@@ -9,7 +10,10 @@ import sys
 from config import Config, create_config
 
 
-@click.group()
+click_completion.init()
+
+
+@click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option("-c", "--configfile", type=str, help="path to yaml config file")
 @click.option("-d", "--debug", is_flag=True, default=False, help="debug mode")
 @click.option("-S", "--simulate", is_flag=True, default=False, help="take no actions")
@@ -91,9 +95,16 @@ def runner(ctx, ips_file, hostname, remote_ips, ip, server_url, note, procs):
     runner_entry(config)
 
 
+@click.command()
+@click.pass_context
+def completion(ctx):
+    print click_completion.core.get_code('zsh')
+
+
 def cli_entry():
     cli.add_command(server)
     cli.add_command(runner)
+    cli.add_command(completion)
     cli(obj={"config": Config()})
 
 

@@ -18,9 +18,11 @@ requirements = [
     "requests",
     "flask",
     "click",
+    "click-completion",
     "pyyaml",
     "geoip2",
-    "tabulate"
+    "tabulate",
+    "urllib3"
 ]
 
 setup(
