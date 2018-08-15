@@ -110,7 +110,7 @@ def run_trace(ip_pack):
         proc.kill()
         return None
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-1]  # noqa
+    src_ip = check_output(["ip", "route", "get", ip]).splitlines()[0].split()[-3]  # noqa
     trp = tracerouteparser.TracerouteParser()
     trp.parse_data(out)
     data = {}
